@@ -27,30 +27,29 @@ pip install -r requirements.txt
 
 1. 复制示例配置文件：
 ```bash
-cp config.json.example config.json
+cp config.yaml.example config.yaml
 ```
 
-2. 编辑 `config.json`，填入你的 Cookie 值：
-```json
-{
-  "gemini": {
-    "secure_1psid": "你的__Secure-1PSID值",
-    "secure_1psidts": "你的__Secure-1PSIDTS值",
-    "proxy": null
-  },
-  "server": {
-    "host": "0.0.0.0",
-    "port": 8000,
-    "log_level": "info"
-  },
-  "client": {
-    "timeout": 30,
-    "auto_close": false,
-    "close_delay": 300,
-    "auto_refresh": true
-  }
-}
+2. 编辑 `config.yaml`，填入你的 Cookie 值：
+```yaml
+gemini:
+  secure_1psid: "你的__Secure-1PSID值"
+  secure_1psidts: "你的__Secure-1PSIDTS值"
+  proxy: null
+
+server:
+  host: "0.0.0.0"
+  port: 8000
+  log_level: "info"
+
+client:
+  timeout: 30
+  auto_close: false
+  close_delay: 300
+  auto_refresh: true
 ```
+
+**注意**：也支持 `config.json` 格式，但推荐使用 YAML。
 
 ### 方式二：环境变量
 

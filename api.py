@@ -10,6 +10,7 @@ import time
 import uuid
 import json
 import hashlib
+import yaml
 from typing import Optional, List, Dict, Any
 from pathlib import Path
 from contextlib import asynccontextmanager
@@ -31,8 +32,20 @@ set_log_level("INFO")
 
 # ==================== 配置 ====================
 def load_config():
-    """加载配置文件"""
-    config_path = os.path.join(os.path.dirname(__file__), "config.json")
+    """加载配置文件（支持 YAML 和 JSON）"""
+    # 优先尝试 YAML，然后 JSON
+    config_paths = [
+        os.path.join(os.path.dirname(__file__), "config.yaml"),
+        os.path.join(os.path.dirname(__file__), "config.json")
+    ]
+    config_path = None
+    config_format = None
+    
+    for path in config_paths:
+        if os.path.exists(path):
+            config_path = path
+            config_format = "yaml" if path.endswith(".yaml") else "json"
+            break
     
     # 优先使用环境变量
     secure_1psid = os.getenv("GEMINI_1PSID")
@@ -40,10 +53,13 @@ def load_config():
     
     # 如果环境变量不存在，尝试从配置文件读取
     if not secure_1psid or not secure_1psidts:
-        if os.path.exists(config_path):
+        if config_path:
             try:
                 with open(config_path, 'r', encoding='utf-8') as f:
-                    config = json.load(f)
+                    if config_format == "yaml":
+                        config = yaml.safe_load(f) or {}
+                    else:
+                        config = json.load(f)
                     secure_1psid = secure_1psid or config.get("gemini", {}).get("secure_1psid", "")
                     secure_1psidts = secure_1psidts or config.get("gemini", {}).get("secure_1psidts", "")
                     proxy = config.get("gemini", {}).get("proxy")
@@ -53,8 +69,8 @@ def load_config():
                 secure_1psidts = secure_1psidts or ""
                 proxy = None
         else:
-            print(f"⚠️ 配置文件不存在: {config_path}")
-            print(f"💡 请创建 config.json 或设置环境变量 GEMINI_1PSID 和 GEMINI_1PSIDTS")
+            print(f"⚠️ 配置文件不存在（已检查: config.yaml, config.json）")
+            print(f"💡 请创建 config.yaml 或设置环境变量 GEMINI_1PSID 和 GEMINI_1PSIDTS")
             secure_1psid = secure_1psid or ""
             secure_1psidts = secure_1psidts or ""
             proxy = None
@@ -74,16 +90,19 @@ def load_config():
         "auto_refresh": True
     }
     
-    if os.path.exists(config_path):
+    if config_path:
         try:
             with open(config_path, 'r', encoding='utf-8') as f:
-                config = json.load(f)
+                if config_format == "yaml":
+                    config = yaml.safe_load(f) or {}
+                else:
+                    config = json.load(f)
                 server_config.update(config.get("server", {}))
                 client_config.update(config.get("client", {}))
                 if proxy is None:
                     proxy = config.get("gemini", {}).get("proxy")
-        except:
-            pass
+        except Exception as e:
+            print(f"⚠️ 读取配置失败: {e}")
     
     return {
         "secure_1psid": secure_1psid,
