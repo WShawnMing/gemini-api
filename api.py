@@ -1020,12 +1020,12 @@ async def list_models():
 if __name__ == "__main__":
     # 配置 uvicorn 日志级别
     # 可选值: critical, error, warning, info, debug, trace
-    log_level = os.getenv("LOG_LEVEL", "info").lower()
+    log_level = os.getenv("LOG_LEVEL", ServerConfig.get("log_level", "info")).lower()
     
     uvicorn.run(
         app,
-        host="0.0.0.0",
-        port=8000,
+        host=ServerConfig.get("host", "0.0.0.0"),
+        port=ServerConfig.get("port", 8000),
         log_level=log_level
     )
 
